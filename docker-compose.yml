@@ -1,0 +1,15 @@
+version: "3"
+services:
+  postgre: 
+    restart: always
+    image: postgres:10.5
+    # command: mysqld --character-set-server=utf8s
+    container_name: "slack-emoji-mention-db"
+    ports:
+      - 5432:5432
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=sem
