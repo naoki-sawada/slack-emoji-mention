@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 const config = require('config');
 const User = require('../model/User');
 
+const defaultValues = {
+  emoji: ['tada', 'sparkles', '+1'],
+  emojiPicks: [1, 2, 3],
+  responseIntervals: [1000, 2000, 3000],
+  containWords: ['lgtm', 'LGTM'],
+};
+
 async function getUser(conditions) {
   try {
     return await User.findOne(conditions).exec();
@@ -16,7 +23,7 @@ async function insertUser(data) {
     if (existUser) {
       return await updateUser(existUser.__id, data);
     } else {
-      return await User.create(data);
+      return await User.create({ ...defaultValues, ...data });
     }
   } catch (e) {
     console.log(e);

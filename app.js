@@ -27,6 +27,7 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use('/config', express.static('www'));
 app.set('port', process.env.PORT || 3000);
 
 app.get('/', function(req, res) {
@@ -101,6 +102,46 @@ app.post('/', async (req, res) => {
   }
 });
 
+app.get('/user', async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) {
+      res.sendStatus(400);
+    }
+
+    const user = await db.getUser({ token });
+    if (!user) {
+      res.sendStatus(404);
+    }
+
+    res.send(user);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
+app.put('/user', async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) {
+      res.sendStatus(400);
+    }
+
+    await db.updateUser({ token }, req.body);
+
+    const user = await db.getUser({ token });
+    if (!user) {
+      res.sendStatus(404);
+    }
+
+    res.send(user);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
 app.get('/redirect', async (req, res) => {
   try {
     const { code } = req.query;
@@ -119,26 +160,25 @@ app.get('/redirect', async (req, res) => {
     console.log('Slack response: ', result.data);
 
     const { ok, access_token, user_id, team_name, team_id } = result.data;
-    if (ok) {
-      const insertUser = new User({
-        userId: user_id,
-        emoji: ['tada', 'sparkles', '+1'],
-        emojiPicks: [1, 2, 3],
-        responseIntervals: [1000, 2000, 3000],
-        containWords: ['lgtm', 'LGTM'],
-        teamId: team_id,
-        token: access_token,
-      });
-      await db.insertUser(insertUser);
 
-      const saved = await db.getUser({ userId: user_id, teamId: team_id });
-      console.log('Saved: ', saved);
+    if (!ok) {
+      res.send('Failed to get token.');
     }
 
-    res.send('OK');
+    const insertUser = new User({
+      teamId: team_id,
+      userId: user_id,
+      token: access_token,
+    });
+    await db.insertUser(insertUser);
+
+    const saved = await db.getUser({ userId: user_id, teamId: team_id });
+    console.log('Saved: ', saved);
+
+    res.redirect(`/config?token=${access_token}`);
   } catch (e) {
     console.log(e);
-    res.send(500);
+    res.sendStatus(500);
   }
 });
 
