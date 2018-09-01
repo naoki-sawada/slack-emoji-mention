@@ -1,12 +1,13 @@
-# express example
+# Slack Emoji Mention
 
 ## About
 
-This is the example project of Express.
+Auto slack emoji mention.
 
 ## Requirements
 
-* Node.js v8.9.1 or heiher
+- Node.js v8.11.3
+- mongo
 
 ## Install
 
@@ -16,18 +17,26 @@ $ npm install
 
 ## Usage
 
+### MongoDB
+
+```
+$ mongod --dbpath data
+```
+
+### Build
+
+```
+$ npm build
+```
+
+### Start
+
 ```
 $ npm start
 ```
 
-### Example
+## Develop
 
 ```
-$ curl -d '{"text":"This is the test!"}' -H "Content-Type: application/json" -X POST http://localhost:3000/message
-```
-
-## Docker
-
-```
-$ docker image build -t express-example:create -f ./Dockerfile ./
+$ npm run dev
 ```
