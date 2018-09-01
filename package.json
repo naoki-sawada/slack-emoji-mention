@@ -3,9 +3,12 @@
   "version": "0.0.2",
   "description": "This is the Node.js of express demo.",
   "main": "app.js",
+  "engines": {
+    "node": "8.11.3"
+  },
   "scripts": {
-    "build": "webpack",
-    "build:watch": "webpack --watch",
+    "build": "$(npm bin)/webpack",
+    "build:watch": "$(npm bin)/webpack --watch",
     "watch": "npm run build:watch",
     "dev": "npm run build:watch & nodemon app.js",
     "start": "npm run build && node app.js"

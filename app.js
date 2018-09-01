@@ -11,7 +11,10 @@ const User = require('./model/User');
 const dummy = require('./lib/dummy');
 const db = require('./utils/db');
 
-mongoose.connect(`mongodb://${config.db.host}/${config.db.database}`);
+mongoose.connect(
+  process.env.MONGODB_URI ||
+    `mongodb://${config.db.host}/${config.db.database}`,
+);
 
 const app = express();
 
