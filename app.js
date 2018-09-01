@@ -166,14 +166,15 @@ app.get('/redirect', async (req, res) => {
 
     if (!ok) {
       res.send('Failed to get token.');
+      return;
     }
 
-    const insertUser = new User({
+    const user = {
       teamId: team_id,
       userId: user_id,
       token: access_token,
-    });
-    await db.insertUser(insertUser);
+    };
+    await db.insertUser(user);
 
     const saved = await db.getUser({ userId: user_id, teamId: team_id });
     console.log('Saved: ', saved);

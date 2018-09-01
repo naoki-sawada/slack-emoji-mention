@@ -19,7 +19,8 @@ async function getUser(conditions) {
 
 async function insertUser(data) {
   try {
-    const existUser = await getUser(data);
+    const { teamId, userId } = data;
+    const existUser = await getUser({ teamId, userId });
     if (existUser) {
       return await updateUser(existUser.__id, data);
     } else {
