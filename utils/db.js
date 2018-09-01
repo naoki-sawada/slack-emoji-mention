@@ -1,0 +1,47 @@
+const mongoose = require('mongoose');
+const config = require('config');
+const User = require('../model/User');
+
+async function getUser(conditions) {
+  try {
+    return await User.findOne(conditions).exec();
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function insertUser(data) {
+  try {
+    const existUser = await getUser(data);
+    if (existUser) {
+      return await updateUser(existUser.__id, data);
+    } else {
+      return await User.create(data);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function updateUser(conditions, update) {
+  try {
+    return await User.findOneAndUpdate(conditions, update).exec();
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function deleteUser(conditions) {
+  try {
+    return await User.findOneAndDelete(conditions).exec();
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+module.exports = {
+  getUser,
+  insertUser,
+  updateUser,
+  deleteUser,
+};

@@ -1,5 +1,7 @@
-db/data
-!db/data/.gitkeep
+db
+!db/.gitkeep
+config/*.js
+!config/default.js
 
 # Created by https://www.gitignore.io/api/macos,node
 
