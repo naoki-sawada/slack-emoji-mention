@@ -969,6 +969,7 @@ const actions = {
       }
     } catch (e) {
       console.error(e);
+      window.alert(`Failed to get user data :( => ${e.message}`);
     }
   },
   putUser: value => async (state, actions) => {
