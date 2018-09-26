@@ -2,6 +2,7 @@ db
 !db/.gitkeep
 config/*.js
 !config/default.js
+www/js/bundle.js
 
 # Created by https://www.gitignore.io/api/macos,node
 

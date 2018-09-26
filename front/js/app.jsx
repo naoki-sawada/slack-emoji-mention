@@ -1,14 +1,10 @@
 import { h, app } from 'hyperapp';
 import queryString from 'query-string';
 import { getUser, putUser } from './utils/api';
+import jsonValidater from './utils/jsonValidater';
 
 const state = {
-  userSettings: {
-    emoji: [],
-    emojiPicks: [],
-    responseIntervals: [],
-    containWords: [],
-  },
+  userSettings: {},
 };
 
 const actions = {
@@ -21,15 +17,21 @@ const actions = {
       }
     } catch (e) {
       console.error(e);
+      window.alert(`Failed to get user data :( => ${e.message}`);
     }
   },
   putUser: value => async (state, actions) => {
     try {
       const { token, updater } = value;
-      const user = await putUser(token, JSON.parse(updater));
+      const parsedUpdater = JSON.parse(updater);
+      const resultValidate = jsonValidater(parsedUpdater);
+      if (resultValidate.errors.length > 0) {
+        throw new Error(`Validation failed! ${resultValidate.errors}`);
+      }
+      const user = await putUser(token, parsedUpdater);
       if (user) {
         actions.setUser(user);
-        window.alert('Succeed to saved!');
+        window.alert('Succeed to save!');
       }
     } catch (e) {
       window.alert(`Failed to save :( => ${e.message}`);
