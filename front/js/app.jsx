@@ -30,7 +30,7 @@ const actions = {
       const user = await putUser(token, JSON.parse(updater));
       if (user) {
         actions.setUser(user);
-        window.alert('Succeed to saved!');
+        window.alert('Succeed to save!');
       }
     } catch (e) {
       window.alert(`Failed to save :( => ${e.message}`);
