@@ -23,6 +23,7 @@
     "body-parser": "^1.17.0",
     "config": "^2.0.1",
     "express": "^4.15.0",
+    "express-http-context": "^1.1.0",
     "hyperapp": "^1.0.1",
     "mongoose": "^5.2.12",
     "prettier": "^1.14.2",

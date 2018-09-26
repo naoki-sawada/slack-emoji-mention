@@ -2,6 +2,7 @@
 const axios = require('axios');
 const express = require('express');
 const http = require('http');
+const httpContext = require('express-http-context');
 const bodyParser = require('body-parser');
 const { WebClient } = require('@slack/client');
 const shuffle = require('shuffle-array');
@@ -10,6 +11,7 @@ const config = require('config');
 const User = require('./model/User');
 const dummy = require('./lib/dummy');
 const db = require('./utils/db');
+const crypto = require('./utils/crypto');
 
 mongoose.connect(
   process.env.MONGODB_URI ||
@@ -17,6 +19,7 @@ mongoose.connect(
 );
 
 const app = express();
+const userRouter = express.Router();
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -30,6 +33,7 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(httpContext.middleware);
 app.use('/config', express.static('www'));
 app.set('port', process.env.PORT || 3000);
 
@@ -105,14 +109,50 @@ app.post('/', async (req, res) => {
   }
 });
 
-app.get('/user', async (req, res) => {
+userRouter.use(async (req, res, next) => {
   try {
     const { token } = req.query;
     if (!token) {
       res.sendStatus(400);
+      return;
     }
 
-    const user = await db.getUser({ token });
+    const result = await axios({
+      method: 'post',
+      url: 'https://slack.com/api/auth.test',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${crypto.decrypt(token)}`,
+      },
+    });
+
+    const { ok, user_id, team_id } = result.data;
+    if (!ok) {
+      res.sendStatus(401);
+      return;
+    }
+
+    if (!user_id && !team_id) {
+      res.sendStatus(500);
+      return;
+    }
+
+    httpContext.set('user_id', user_id);
+    httpContext.set('team_id', team_id);
+
+    next();
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+userRouter.get('/', async (req, res) => {
+  try {
+    const searchCondition = {
+      teamId: httpContext.get('team_id'),
+      userId: httpContext.get('user_id'),
+    };
+    const user = await db.getUser(searchCondition);
     if (!user) {
       res.sendStatus(404);
     }
@@ -124,16 +164,16 @@ app.get('/user', async (req, res) => {
   }
 });
 
-app.put('/user', async (req, res) => {
+userRouter.put('/', async (req, res) => {
   try {
-    const { token } = req.query;
-    if (!token) {
-      res.sendStatus(400);
-    }
+    const searchCondition = {
+      teamId: httpContext.get('team_id'),
+      userId: httpContext.get('user_id'),
+    };
 
-    await db.updateUser({ token }, req.body);
+    await db.updateUser(searchCondition, req.body);
 
-    const user = await db.getUser({ token });
+    const user = await db.getUser(searchCondition);
     if (!user) {
       res.sendStatus(404);
     }
@@ -144,6 +184,8 @@ app.put('/user', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+app.use('/user', userRouter);
 
 app.get('/redirect', async (req, res) => {
   try {
@@ -160,7 +202,7 @@ app.get('/redirect', async (req, res) => {
         code,
       },
     });
-    console.log('Slack response: ', result.data);
+    // console.log('Slack response: ', result.data);
 
     const { ok, access_token, user_id, team_name, team_id } = result.data;
 
@@ -172,14 +214,13 @@ app.get('/redirect', async (req, res) => {
     const user = {
       teamId: team_id,
       userId: user_id,
-      token: access_token,
     };
     await db.insertUser(user);
 
     const saved = await db.getUser({ userId: user_id, teamId: team_id });
-    console.log('Saved: ', saved);
+    // console.log('Saved: ', saved);
 
-    res.redirect(`/config?token=${access_token}`);
+    res.redirect(`/config?token=${crypto.encrypt(access_token)}`);
   } catch (e) {
     console.log(e);
     res.sendStatus(500);
