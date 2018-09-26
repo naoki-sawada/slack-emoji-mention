@@ -2,15 +2,9 @@ import { h, app } from 'hyperapp';
 import queryString from 'query-string';
 import { getUser, putUser } from './utils/api';
 import jsonValidater from './utils/jsonValidater';
-import { validate } from 'jsonschema';
 
 const state = {
-  userSettings: {
-    emoji: [],
-    emojiPicks: [],
-    responseIntervals: [],
-    containWords: [],
-  },
+  userSettings: {},
 };
 
 const actions = {
