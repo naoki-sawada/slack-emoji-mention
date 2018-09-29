@@ -55,7 +55,7 @@ app.post('/', async (req, res) => {
       team_id,
       event: { channel, event_ts, text },
     } = req.body;
-    const findUser = text.match(/\<\@(.*?)\>/);
+    const findUser = text ? text.match(/\<\@(.*?)\>/) : false;
     if (channel && findUser) {
       const mentionedUser = findUser[1];
       console.log('mentionedUser: ', mentionedUser);
